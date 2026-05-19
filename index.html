@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>惠猎 - 全网比价，帮你省钱</title>
+    <meta name="description" content="惠猎帮你一键搜索淘宝、京东、拼多多多平台商品价格，自动领券，比价省钱。">
+    <meta name="keywords" content="比价,优惠券,淘宝,京东,拼多多,省钱,导购">
+    <style>
+        :root {
+            --red: #FF4D4F;
+            --red-light: #FFF1F0;
+            --orange: #FA8C16;
+            --blue: #1890FF;
+            --green: #52C41A;
+            --gray-1: #1F2937;
+            --gray-2: #374151;
+            --gray-3: #6B7280;
+            --gray-4: #9CA3AF;
+            --gray-5: #E5E7EB;
+            --gray-6: #F3F4F6;
+            --white: #FFFFFF;
+            --radius: 12px;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif; background: var(--gray-6); color: var(--gray-1); line-height: 1.6; }
+        a { text-decoration: none; color: inherit; }
+
+        /* Header */
+        .header { background: linear-gradient(135deg, var(--red), #FF7875); color: var(--white); padding: 0; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+        .header-inner { max-width: 1200px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+        .logo span { font-size: 13px; font-weight: 400; opacity: 0.85; margin-left: 8px; }
+
+        /* Search */
+        .search-section { background: linear-gradient(135deg, var(--red), #FF7875); padding: 24px 20px 32px; }
+        .search-box { max-width: 680px; margin: 0 auto; position: relative; }
+        .search-box input { width: 100%; height: 50px; border: none; border-radius: 25px; padding: 0 120px 0 20px; font-size: 16px; outline: none; box-shadow: var(--shadow-lg); }
+        .search-box input:focus { box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+        .search-box button { position: absolute; right: 4px; top: 4px; height: 42px; padding: 0 28px; border: none; border-radius: 21px; background: var(--red); color: white; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .search-box button:hover { background: #E8383A; }
+
+        /* Tabs */
+        .filter-bar { max-width: 1200px; margin: 16px auto 0; padding: 0 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-tab { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--gray-5); background: var(--white); color: var(--gray-3); font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        .filter-tab:hover, .filter-tab.active { background: var(--red); color: white; border-color: var(--red); }
+
+        /* Categories */
+        .categories { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .cat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        @media (max-width: 768px) { .cat-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; } }
+        .cat-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 8px; background: var(--white); border-radius: var(--radius); cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); }
+        .cat-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .cat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: white; }
+        .cat-name { font-size: 13px; color: var(--gray-2); }
+
+        /* Section */
+        .section { max-width: 1200px; margin: 24px auto; padding: 0 20px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-title { font-size: 18px; font-weight: 700; color: var(--gray-1); }
+        .section-more { font-size: 14px; color: var(--gray-4); cursor: pointer; }
+        .section-more:hover { color: var(--red); }
+
+        /* Product Card */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+        @media (max-width: 768px) { .product-grid { grid-template-columns: 1fr; } }
+        .product-card { background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: all 0.2s; cursor: pointer; position: relative; }
+        .product-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .product-card .best-tag { position: absolute; top: 12px; left: 12px; background: var(--red); color: white; font-size: 12px; padding: 2px 10px; border-radius: 10px; font-weight: 600; z-index: 1; }
+        .product-card .platform-tag { position: absolute; top: 12px; right: 12px; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; color: white; z-index: 1; }
+        .platform-jd { background: #E4393C; }
+        .platform-taobao { background: #FF6A00; }
+        .platform-pdd { background: #E02E24; }
+        .product-img { width: 100%; height: 200px; background: var(--gray-6); display: flex; align-items: center; justify-content: center; color: var(--gray-4); font-size: 14px; }
+        .product-img img { width: 100%; height: 100%; object-fit: cover; }
+        .product-info { padding: 14px 16px; }
+        .product-name { font-size: 14px; color: var(--gray-2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 42px; }
+        .product-meta { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--gray-4); }
+        .product-price-row { display: flex; align-items: baseline; gap: 8px; margin-top: 10px; }
+        .price-current { font-size: 22px; font-weight: 700; color: var(--red); }
+        .price-current small { font-size: 14px; }
+        .price-original { font-size: 13px; color: var(--gray-4); text-decoration: line-through; }
+        .price-save { font-size: 12px; color: var(--orange); background: #FFF7E6; padding: 1px 6px; border-radius: 4px; }
+        .product-actions { display: flex; gap: 8px; padding: 0 16px 14px; }
+        .btn-buy { flex: 1; height: 36px; border: none; border-radius: 18px; background: var(--red); color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-buy:hover { background: #E8383A; }
+        .btn-coupon { height: 36px; padding: 0 14px; border: 1px solid var(--red); border-radius: 18px; background: var(--red-light); color: var(--red); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn-coupon:hover { background: var(--red); color: white; }
+
+        /* Coupon Cards */
+        .coupon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+        .coupon-card { display: flex; background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        .coupon-left { width: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 16px 8px; }
+        .coupon-amount { font-size: 28px; font-weight: 700; }
+        .coupon-amount small { font-size: 14px; }
+        .coupon-cond { font-size: 11px; opacity: 0.9; }
+        .coupon-right { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+        .coupon-title { font-size: 14px; font-weight: 600; color: var(--gray-2); }
+        .coupon-date { font-size: 12px; color: var(--gray-4); }
+        .coupon-claim { align-self: flex-end; padding: 4px 14px; border: none; border-radius: 14px; background: var(--red); color: white; font-size: 13px; cursor: pointer; margin-top: 4px; }
+        .coupon-claim:hover { background: #E8383A; }
+        .coupon-jd { background: linear-gradient(135deg, #E4393C, #FF6B6B); }
+        .coupon-taobao { background: linear-gradient(135deg, #FF6A00, #FF9A44); }
+        .coupon-pdd { background: linear-gradient(135deg, #E02E24, #FF5252); }
+        .coupon-douyin { background: linear-gradient(135deg, #1A1A2E, #4A4A6A); }
+
+        /* Compare Section */
+        .compare-panel { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); display: none; }
+        .compare-panel.show { display: block; }
+        .compare-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--gray-1); }
+        .compare-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--gray-5); }
+        .compare-row:last-child { border-bottom: none; }
+        .compare-platform { width: 80px; font-size: 14px; font-weight: 600; }
+        .compare-price { flex: 1; font-size: 16px; }
+        .compare-cheapest { color: var(--red); font-weight: 700; }
+
+        /* Footer */
+        .footer { max-width: 1200px; margin: 40px auto 0; padding: 24px 20px; text-align: center; color: var(--gray-4); font-size: 13px; border-top: 1px solid var(--gray-5); }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--gray-4); }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state .text { font-size: 16px; }
+        .empty-state .hint { font-size: 14px; margin-top: 8px; }
+
+        /* Toast */
+        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(0,0,0,0.75); color: white; padding: 10px 24px; border-radius: 20px; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 999; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: var(--gray-4); }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .product-grid { grid-template-columns: 1fr; }
+            .cat-grid { grid-template-columns: repeat(5, 1fr); }
+            .cat-item { padding: 12px 4px; }
+            .cat-icon { width: 36px; height: 36px; font-size: 11px; }
+            .cat-name { font-size: 11px; }
+            .coupon-grid { grid-template-columns: 1fr; }
+            .price-current { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Header -->
+<div class="header">
+    <div class="header-inner">
+        <div class="logo">惠猎<span>全网比价</span></div>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="search-section">
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索商品，比价省钱..." autofocus>
+        <button onclick="doSearch()">搜索</button>
+    </div>
+    <div class="filter-bar" id="filterBar">
+        <span class="filter-tab active" data-sort="price" onclick="setSort('price', this)">价格</span>
+        <span class="filter-tab" data-sort="sales" onclick="setSort('sales', this)">销量</span>
+        <span class="filter-tab" data-sort="rating" onclick="setSort('rating', this)">评分</span>
+    </div>
+</div>
+
+<!-- Categories -->
+<div class="categories">
+    <div class="cat-grid" id="catGrid"></div>
+</div>
+
+<!-- Hot Deals -->
+<div class="section" id="hotSection">
+    <div class="section-header">
+        <h2 class="section-title">今日热榜</h2>
+        <span class="section-more" onclick="clearSearch()">查看全部 ></span>
+    </div>
+    <div class="product-grid" id="hotGrid"></div>
+</div>
+
+<!-- Search Results -->
+<div class="section" id="searchSection" style="display:none;">
+    <div class="section-header">
+        <h2 class="section-title" id="searchTitle">搜索结果</h2>
+        <span class="section-more" onclick="clearSearch()">清除搜索</span>
+    </div>
+    <div class="product-grid" id="searchGrid"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="icon">~</div>
+        <div class="text">未找到相关商品</div>
+        <div class="hint">换个关键词试试</div>
+    </div>
+</div>
+
+<!-- Compare Panel -->
+<div class="section" id="compareSection" style="display:none;">
+    <div class="compare-panel show">
+        <div class="compare-title" id="compareTitle">多平台比价</div>
+        <div id="compareList"></div>
+    </div>
+</div>
+
+<!-- Coupons -->
+<div class="section">
+    <div class="section-header">
+        <h2 class="section-title">优惠券中心</h2>
+        <span class="section-more">更多优惠 ></span>
+    </div>
+    <div class="coupon-grid" id="couponGrid"></div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>惠猎 - 全网比价，帮你省钱</p>
+    <p style="margin-top:4px;">商品信息来自各电商平台，价格可能存在时效性差异，请以实际购买页面为准</p>
+    <p style="margin-top:4px;">&copy; 2025 惠猎 DealHunter</p>
+</div>
+
+<script>
+// ==================== Data ====================
+const PRODUCTS = [
+    // 笔记本电脑
+    {id:1,name:"联想小新Pro14 2025 酷睿Ultra5 16G 512G 灰色",platform:"jd",platformName:"京东",price:5240,originalPrice:6499,sales:32000,rating:4.8,shopName:"联想京东自营旗舰店",commission:2.5},
+    {id:2,name:"联想小新Pro14 2025 酷睿Ultra5 16G 512G 银色",platform:"taobao",platformName:"淘宝",price:5199,originalPrice:6499,sales:28000,rating:4.7,shopName:"联想官方旗舰店",commission:3.0},
+    {id:3,name:"联想小新Pro14 2025 酷睿Ultra5 16G 512G",platform:"pdd",platformName:"拼多多",price:4980,originalPrice:6499,sales:45000,rating:4.6,shopName:"联想授权店",commission:5.0},
+    {id:4,name:"ThinkBook 14+ 2025 酷睿Ultra5 32G 1TB",platform:"jd",platformName:"京东",price:5999,originalPrice:7499,sales:15000,rating:4.9,shopName:"联想京东自营旗舰店",commission:2.5},
+    {id:5,name:"拯救者R7000P 2025 R7 16G 512G RTX4060",platform:"pdd",platformName:"拼多多",price:6888,originalPrice:8499,sales:22000,rating:4.8,shopName:"联想授权店",commission:4.5},
+    {id:6,name:"拯救者R7000P 2025 R7 16G 512G RTX4060",platform:"jd",platformName:"京东",price:7299,originalPrice:8499,sales:18000,rating:4.9,shopName:"联想京东自营旗舰店",commission:2.0},
+    {id:7,name:"联想小新Air14 2025 酷睿Ultra5 16G 512G",platform:"taobao",platformName:"淘宝",price:4399,originalPrice:5499,sales:35000,rating:4.7,shopName:"联想官方旗舰店",commission:3.0},
+    {id:8,name:"联想小新Air14 2025 酷睿Ultra5 16G 512G",platform:"pdd",platformName:"拼多多",price:4180,originalPrice:5499,sales:52000,rating:4.5,shopName:"联想授权店",commission:5.0},
+    {id:9,name:"联想YOGA Pro14s 2025 酷睿Ultra7 32G 1TB",platform:"jd",platformName:"京东",price:7999,originalPrice:9999,sales:8000,rating:4.9,shopName:"联想京东自营旗舰店",commission:2.0},
+    {id:10,name:"联想ThinkPad E14 2025 酷睿Ultra5 16G 512G",platform:"taobao",platformName:"淘宝",price:4499,originalPrice:5499,sales:20000,rating:4.7,shopName:"ThinkPad官方旗舰店",commission:3.0},
+    {id:11,name:"惠普战66 七代 酷睿Ultra5 16G 1TB",platform:"jd",platformName:"京东",price:4599,originalPrice:5799,sales:25000,rating:4.8,shopName:"惠普京东自营旗舰店",commission:2.5},
+    {id:12,name:"惠普战66 七代 酷睿Ultra5 16G 1TB",platform:"taobao",platformName:"淘宝",price:4499,originalPrice:5799,sales:18000,rating:4.7,shopName:"惠普官方旗舰店",commission:3.0},
+    // 手机
+    {id:13,name:"小米15 12GB+256GB 白色",platform:"jd",platformName:"京东",price:4499,originalPrice:4499,sales:85000,rating:4.8,shopName:"小米京东自营旗舰店",commission:1.5},
+    {id:14,name:"小米15 12GB+256GB 白色",platform:"pdd",platformName:"拼多多",price:3899,originalPrice:4499,sales:120000,rating:4.7,shopName:"小米授权店",commission:4.0},
+    {id:15,name:"小米15 Pro 16GB+512GB 钛金属",platform:"taobao",platformName:"淘宝",price:5999,originalPrice:5999,sales:35000,rating:4.8,shopName:"小米官方旗舰店",commission:2.5},
+    {id:16,name:"iPhone 16 128GB 白色",platform:"jd",platformName:"京东",price:5999,originalPrice:6999,sales:320000,rating:4.9,shopName:"Apple产品京东自营旗舰店",commission:0.8},
+    {id:17,name:"iPhone 16 128GB 白色",platform:"pdd",platformName:"拼多多",price:5199,originalPrice:6999,sales:450000,rating:4.8,shopName:"Apple授权专营店",commission:1.2},
+    {id:18,name:"华为Mate 70 Pro 12GB+512GB 雅丹黑",platform:"jd",platformName:"京东",price:6999,originalPrice:6999,sales:150000,rating:4.9,shopName:"华为京东自营旗舰店",commission:1.0},
+    {id:19,name:"华为Mate 70 Pro 12GB+512GB 雅丹黑",platform:"taobao",platformName:"淘宝",price:6899,originalPrice:6999,sales:95000,rating:4.8,shopName:"华为官方旗舰店",commission:1.5},
+    {id:20,name:"vivo X200 Pro 16GB+512GB 钛灰",platform:"pdd",platformName:"拼多多",price:4899,originalPrice:5999,sales:28000,rating:4.7,shopName:"vivo授权店",commission:4.0},
+    {id:21,name:"OPPO Find X8 Pro 16GB+512GB 星野",platform:"jd",platformName:"京东",price:5399,originalPrice:5999,sales:22000,rating:4.8,shopName:"OPPO京东自营旗舰店",commission:1.5},
+    {id:22,name:"一加13 16GB+512GB 星辰灰",platform:"pdd",platformName:"拼多多",price:4199,originalPrice:4999,sales:35000,rating:4.7,shopName:"一加授权店",commission:4.5},
+    // 耳机
+    {id:23,name:"Apple AirPods Pro 2 USB-C版",platform:"jd",platformName:"京东",price:1699,originalPrice:1999,sales:280000,rating:4.9,shopName:"Apple产品京东自营旗舰店",commission:1.5},
+    {id:24,name:"Apple AirPods Pro 2 USB-C版",platform:"pdd",platformName:"拼多多",price:1349,originalPrice:1999,sales:350000,rating:4.8,shopName:"Apple授权专营店",commission:1.0},
+    {id:25,name:"索尼WH-1000XM5 头戴式降噪耳机 黑色",platform:"jd",platformName:"京东",price:2299,originalPrice:2999,sales:65000,rating:4.9,shopName:"索尼京东自营旗舰店",commission:2.0},
+    {id:26,name:"索尼WH-1000XM5 头戴式降噪耳机 银色",platform:"taobao",platformName:"淘宝",price:2199,originalPrice:2999,sales:35000,rating:4.8,shopName:"索尼官方旗舰店",commission:2.5},
+    {id:27,name:"索尼WH-1000XM5 头戴式降噪耳机 黑色",platform:"pdd",platformName:"拼多多",price:1999,originalPrice:2999,sales:95000,rating:4.7,shopName:"索尼授权店",commission:4.0},
+    {id:28,name:"华为FreeBuds Pro 3 冰霜银",platform:"jd",platformName:"京东",price:999,originalPrice:1299,sales:120000,rating:4.8,shopName:"华为京东自营旗舰店",commission:2.0},
+    {id:29,name:"华为FreeBuds Pro 3 冰霜银",platform:"taobao",platformName:"淘宝",price:949,originalPrice:1299,sales:75000,rating:4.7,shopName:"华为官方旗舰店",commission:2.5},
+    {id:30,name:"小米Buds 5 Pro 冰川银",platform:"jd",platformName:"京东",price:699,originalPrice:899,sales:180000,rating:4.7,shopName:"小米京东自营旗舰店",commission:2.5},
+    {id:31,name:"小米Buds 5 Pro 冰川银",platform:"pdd",platformName:"拼多多",price:599,originalPrice:899,sales:250000,rating:4.6,shopName:"小米授权店",commission:5.0},
+    // 电视
+    {id:32,name:"小米电视S Pro 75英寸 Mini LED 4K 144Hz",platform:"jd",platformName:"京东",price:5999,originalPrice:7999,sales:15000,rating:4.8,shopName:"小米京东自营旗舰店",commission:1.5},
+    {id:33,name:"小米电视S Pro 75英寸 Mini LED 4K 144Hz",platform:"taobao",platformName:"淘宝",price:5799,originalPrice:7999,sales:12000,rating:4.7,shopName:"小米官方旗舰店",commission:2.0},
+    {id:34,name:"TCL 75Q10K Pro 75英寸 Mini LED 2304分区",platform:"jd",platformName:"京东",price:8999,originalPrice:12999,sales:8000,rating:4.9,shopName:"TCL京东自营旗舰店",commission:2.0},
+    {id:35,name:"TCL 75Q10K Pro 75英寸 Mini LED 2304分区",platform:"pdd",platformName:"拼多多",price:7999,originalPrice:12999,sales:18000,rating:4.7,shopName:"TCL授权店",commission:4.0},
+    {id:36,name:"海信75E8N Pro 75英寸 ULED Mini LED 2376分区",platform:"jd",platformName:"京东",price:8499,originalPrice:11999,sales:10000,rating:4.8,shopName:"海信京东自营旗舰店",commission:2.0},
+    {id:37,name:"海信75E8N Pro 75英寸 ULED Mini LED 2376分区",platform:"pdd",platformName:"拼多多",price:7599,originalPrice:11999,sales:22000,rating:4.7,shopName:"海信授权店",commission:4.0},
+    {id:38,name:"索尼XR-75X90L 75英寸 4K 120Hz",platform:"taobao",platformName:"淘宝",price:9999,originalPrice:13999,sales:5000,rating:4.9,shopName:"索尼官方旗舰店",commission:2.0},
+    // 相机
+    {id:39,name:"索尼A7M4 全画幅微单相机 单机身",platform:"jd",platformName:"京东",price:14999,originalPrice:16999,sales:12000,rating:4.9,shopName:"索尼京东自营旗舰店",commission:1.0},
+    {id:40,name:"索尼A7M4 全画幅微单相机 单机身",platform:"taobao",platformName:"淘宝",price:14599,originalPrice:16999,sales:8000,rating:4.8,shopName:"索尼官方旗舰店",commission:1.5},
+    {id:41,name:"佳能EOS R6 Mark II 全画幅微单相机",platform:"jd",platformName:"京东",price:15999,originalPrice:18999,sales:9500,rating:4.9,shopName:"佳能京东自营旗舰店",commission:1.0},
+    {id:42,name:"佳能EOS R6 Mark II 全画幅微单相机",platform:"pdd",platformName:"拼多多",price:14999,originalPrice:18999,sales:15000,rating:4.8,shopName:"佳能授权店",commission:3.0},
+    {id:43,name:"尼康Z6III 全画幅微单相机 单机身",platform:"jd",platformName:"京东",price:16999,originalPrice:19999,sales:6000,rating:4.8,shopName:"尼康京东自营旗舰店",commission:1.0},
+    {id:44,name:"富士X-T5 复古微单相机 银色",platform:"taobao",platformName:"淘宝",price:11999,originalPrice:13999,sales:18000,rating:4.7,shopName:"富士官方旗舰店",commission:2.0},
+    {id:45,name:"富士X-T5 复古微单相机 银色",platform:"pdd",platformName:"拼多多",price:10999,originalPrice:13999,sales:25000,rating:4.6,shopName:"富士授权店",commission:4.0},
+    {id:46,name:"大疆Pocket 3 口袋云台相机 标准版",platform:"jd",platformName:"京东",price:3499,originalPrice:3999,sales:45000,rating:4.8,shopName:"大疆京东自营旗舰店",commission:2.5},
+    {id:47,name:"大疆Pocket 3 口袋云台相机 标准版",platform:"pdd",platformName:"拼多多",price:3199,originalPrice:3999,sales:65000,rating:4.7,shopName:"大疆授权店",commission:4.0},
+    // 游戏
+    {id:48,name:"任天堂Switch OLED 日版 白色",platform:"jd",platformName:"京东",price:1799,originalPrice:2199,sales:85000,rating:4.8,shopName:"Nintendo京东自营旗舰店",commission:1.5},
+    {id:49,name:"任天堂Switch OLED 日版 白色",platform:"pdd",platformName:"拼多多",price:1599,originalPrice:2199,sales:350000,rating:4.8,shopName:"任天堂授权店",commission:1.5},
+    {id:50,name:"索尼PS5 轻薄版 光驱版 1TB",platform:"jd",platformName:"京东",price:2999,originalPrice:3899,sales:65000,rating:4.9,shopName:"SonyPlayStation京东自营旗舰店",commission:1.0},
+    {id:51,name:"索尼PS5 轻薄版 光驱版 1TB",platform:"pdd",platformName:"拼多多",price:2799,originalPrice:3899,sales:180000,rating:4.7,shopName:"Sony授权店",commission:2.0},
+    {id:52,name:"华硕ROG掌机X ROG Ally X 1TB",platform:"jd",platformName:"京东",price:5999,originalPrice:7999,sales:12000,rating:4.7,shopName:"华硕京东自营旗舰店",commission:2.0},
+    {id:53,name:"Xbox Series X 1TB 黑色",platform:"taobao",platformName:"淘宝",price:3499,originalPrice:4299,sales:18000,rating:4.8,shopName:"微软官方旗舰店",commission:1.5},
+    {id:54,name:"Xbox Series X 1TB 黑色",platform:"pdd",platformName:"拼多多",price:3299,originalPrice:4299,sales:45000,rating:4.7,shopName:"微软授权店",commission:3.5},
+    {id:55,name:"Steam Deck OLED 512GB 海外版",platform:"jd",platformName:"京东",price:3999,originalPrice:4999,sales:20000,rating:4.8,shopName:"Valve京东旗舰店",commission:2.0},
+    // 家电
+    {id:56,name:"戴森V15 Detect Fluffy 无绳吸尘器",platform:"jd",platformName:"京东",price:3999,originalPrice:4990,sales:35000,rating:4.9,shopName:"戴森京东自营旗舰店",commission:3.0},
+    {id:57,name:"戴森V15 Detect Fluffy 无绳吸尘器",platform:"pdd",platformName:"拼多多",price:3599,originalPrice:4990,sales:85000,rating:4.7,shopName:"戴森授权店",commission:5.0},
+    {id:58,name:"戴森吹风机HD15 镍铜色",platform:"jd",platformName:"京东",price:2799,originalPrice:3490,sales:42000,rating:4.9,shopName:"戴森京东自营旗舰店",commission:3.0},
+    {id:59,name:"戴森吹风机HD15 镍铜色",platform:"taobao",platformName:"淘宝",price:2699,originalPrice:3490,sales:28000,rating:4.8,shopName:"戴森官方旗舰店",commission:3.5},
+    {id:60,name:"科沃斯T30 PRO扫地机器人 上下水版",platform:"jd",platformName:"京东",price:3999,originalPrice:4999,sales:18000,rating:4.8,shopName:"科沃斯京东自营旗舰店",commission:3.0},
+    {id:61,name:"科沃斯T30 PRO扫地机器人 上下水版",platform:"pdd",platformName:"拼多多",price:3599,originalPrice:4999,sales:35000,rating:4.7,shopName:"科沃斯授权店",commission:5.0},
+    {id:62,name:"石头P10S Pro扫地机器人 自动上下水版",platform:"jd",platformName:"京东",price:3999,originalPrice:4999,sales:15000,rating:4.8,shopName:"石头京东自营旗舰店",commission:3.0},
+    {id:63,name:"石头P10S Pro扫地机器人 自动上下水版",platform:"taobao",platformName:"淘宝",price:3799,originalPrice:4999,sales:12000,rating:4.7,shopName:"石头官方旗舰店",commission:3.5},
+    {id:64,name:"美的空调 酷省电Pro 1.5匹 新一级能效",platform:"jd",platformName:"京东",price:2499,originalPrice:3199,sales:85000,rating:4.7,shopName:"美的京东自营旗舰店",commission:2.0},
+    {id:65,name:"美的空调 酷省电Pro 1.5匹 新一级能效",platform:"pdd",platformName:"拼多多",price:2299,originalPrice:3199,sales:350000,rating:4.7,shopName:"美的授权店",commission:2.0},
+    {id:66,name:"海尔冰箱 531L 对开门 风冷无霜",platform:"jd",platformName:"京东",price:2999,originalPrice:3799,sales:55000,rating:4.8,shopName:"海尔京东自营旗舰店",commission:2.0},
+    {id:67,name:"海尔冰箱 531L 对开门 风冷无霜",platform:"taobao",platformName:"淘宝",price:2899,originalPrice:3799,sales:32000,rating:4.7,shopName:"海尔官方旗舰店",commission:2.5},
+    // 运动
+    {id:68,name:"耐克Air Force 1 07 白色低帮板鞋",platform:"jd",platformName:"京东",price:749,originalPrice:899,sales:450000,rating:4.8,shopName:"耐克京东自营旗舰店",commission:3.0},
+    {id:69,name:"耐克Air Force 1 07 白色低帮板鞋",platform:"taobao",platformName:"淘宝",price:699,originalPrice:899,sales:320000,rating:4.7,shopName:"耐克官方旗舰店",commission:4.0},
+    {id:70,name:"耐克Air Force 1 07 白色低帮板鞋",platform:"pdd",platformName:"拼多多",price:599,originalPrice:899,sales:560000,rating:4.6,shopName:"耐克授权店",commission:5.0},
+    {id:71,name:"阿迪达斯Ultra Boost 2024 跑鞋 黑色",platform:"jd",platformName:"京东",price:1099,originalPrice:1499,sales:65000,rating:4.8,shopName:"阿迪达斯京东自营旗舰店",commission:3.0},
+    {id:72,name:"阿迪达斯Ultra Boost 2024 跑鞋 黑色",platform:"pdd",platformName:"拼多多",price:899,originalPrice:1499,sales:150000,rating:4.7,shopName:"阿迪达斯授权店",commission:5.0},
+    {id:73,name:"李宁韦德之道11 篮球鞋 白色",platform:"jd",platformName:"京东",price:1299,originalPrice:1599,sales:28000,rating:4.8,shopName:"李宁京东自营旗舰店",commission:3.0},
+    {id:74,name:"李宁韦德之道11 篮球鞋 白色",platform:"taobao",platformName:"淘宝",price:1199,originalPrice:1599,sales:18000,rating:4.7,shopName:"李宁官方旗舰店",commission:4.0},
+    {id:75,name:"始祖鸟Beta LT硬壳冲锋衣 黑色",platform:"jd",platformName:"京东",price:4500,originalPrice:5500,sales:8000,rating:4.9,shopName:"始祖鸟京东旗舰店",commission:2.0},
+    {id:76,name:"始祖鸟Beta LT硬壳冲锋衣 黑色",platform:"pdd",platformName:"拼多多",price:3999,originalPrice:5500,sales:35000,rating:4.6,shopName:"始祖鸟授权店",commission:5.0},
+    // 美妆
+    {id:77,name:"SK-II神仙水 230ml 精华露",platform:"jd",platformName:"京东",price:1290,originalPrice:1690,sales:95000,rating:4.9,shopName:"SK-II京东自营旗舰店",commission:3.0},
+    {id:78,name:"SK-II神仙水 230ml 精华露",platform:"taobao",platformName:"淘宝",price:1190,originalPrice:1690,sales:65000,rating:4.8,shopName:"SK-II官方旗舰店",commission:4.0},
+    {id:79,name:"SK-II神仙水 230ml 精华露",platform:"pdd",platformName:"拼多多",price:1099,originalPrice:1690,sales:180000,rating:4.7,shopName:"SK-II授权店",commission:8.0},
+    {id:80,name:"雅诗兰黛小棕瓶精华 50ml",platform:"jd",platformName:"京东",price:760,originalPrice:950,sales:120000,rating:4.8,shopName:"雅诗兰黛京东自营旗舰店",commission:3.5},
+    {id:81,name:"雅诗兰黛小棕瓶精华 50ml",platform:"pdd",platformName:"拼多多",price:650,originalPrice:950,sales:250000,rating:4.7,shopName:"雅诗兰黛授权店",commission:8.0},
+    {id:82,name:"兰蔻小黑瓶精华 50ml",platform:"jd",platformName:"京东",price:820,originalPrice:1080,sales:85000,rating:4.8,shopName:"兰蔻京东自营旗舰店",commission:3.0},
+    {id:83,name:"兰蔻小黑瓶精华 50ml",platform:"taobao",platformName:"淘宝",price:780,originalPrice:1080,sales:55000,rating:4.7,shopName:"兰蔻官方旗舰店",commission:4.0},
+    {id:84,name:"YSL小金条口红 21号色",platform:"jd",platformName:"京东",price:350,originalPrice:420,sales:220000,rating:4.7,shopName:"YSL京东自营旗舰店",commission:5.0},
+    {id:85,name:"YSL小金条口红 21号色",platform:"pdd",platformName:"拼多多",price:299,originalPrice:420,sales:350000,rating:4.6,shopName:"YSL授权店",commission:8.0},
+    // 食品
+    {id:86,name:"智利车厘子 JJJ级 5斤礼盒装",platform:"jd",platformName:"京东",price:199,originalPrice:299,sales:280000,rating:4.7,shopName:"京东生鲜自营",commission:3.0},
+    {id:87,name:"智利车厘子 JJJ级 5斤礼盒装",platform:"pdd",platformName:"拼多多",price:169,originalPrice:299,sales:650000,rating:4.6,shopName:"多多果园",commission:5.0},
+    {id:88,name:"泰国金枕榴莲 4-5斤",platform:"jd",platformName:"京东",price:189,originalPrice:269,sales:350000,rating:4.7,shopName:"京东生鲜自营",commission:3.0},
+    {id:89,name:"泰国金枕榴莲 4-5斤",platform:"pdd",platformName:"拼多多",price:159,originalPrice:269,sales:800000,rating:4.6,shopName:"多多果园",commission:5.0},
+    {id:90,name:"蒙牛特仑苏纯牛奶 250ml*16盒",platform:"jd",platformName:"京东",price:59.9,originalPrice:89.9,sales:450000,rating:4.8,shopName:"蒙牛京东自营旗舰店",commission:2.0},
+    {id:91,name:"蒙牛特仑苏纯牛奶 250ml*16盒",platform:"pdd",platformName:"拼多多",price:49.9,originalPrice:89.9,sales:560000,rating:4.7,shopName:"蒙牛授权店",commission:3.0},
+    // 平板
+    {id:92,name:"iPad Air 6 11英寸 M2芯片 128GB 蓝色",platform:"jd",platformName:"京东",price:4799,originalPrice:4799,sales:65000,rating:4.9,shopName:"Apple产品京东自营旗舰店",commission:1.0},
+    {id:93,name:"iPad Air 6 11英寸 M2芯片 128GB 蓝色",platform:"pdd",platformName:"拼多多",price:4199,originalPrice:4799,sales:120000,rating:4.7,shopName:"Apple授权专营店",commission:2.0},
+    {id:94,name:"华为MatePad Pro 13.2英寸 256GB 星河蓝",platform:"jd",platformName:"京东",price:5499,originalPrice:5699,sales:25000,rating:4.9,shopName:"华为京东自营旗舰店",commission:1.0},
+    {id:95,name:"华为MatePad Pro 13.2英寸 256GB 星河蓝",platform:"taobao",platformName:"淘宝",price:5299,originalPrice:5699,sales:18000,rating:4.8,shopName:"华为官方旗舰店",commission:1.5},
+    {id:96,name:"小米平板6S Pro 12.4英寸 256GB 黑色",platform:"jd",platformName:"京东",price:3299,originalPrice:3699,sales:45000,rating:4.8,shopName:"小米京东自营旗舰店",commission:2.0},
+    {id:97,name:"小米平板6S Pro 12.4英寸 256GB 黑色",platform:"pdd",platformName:"拼多多",price:2899,originalPrice:3699,sales:85000,rating:4.7,shopName:"小米授权店",commission:4.0},
+];
+
+const COUPONS = [
+    {id:1,platform:"jd",platformName:"京东",title:"京东全品类券",amount:20,threshold:199,start:"2025-01-01",end:"2025-12-31",url:"https://coupon.jd.com"},
+    {id:2,platform:"jd",platformName:"京东",title:"数码家电满减券",amount:100,threshold:999,start:"2025-01-01",end:"2025-12-31",url:"https://coupon.jd.com"},
+    {id:3,platform:"taobao",platformName:"淘宝",title:"淘宝跨店满减券",amount:30,threshold:300,start:"2025-01-01",end:"2025-12-31",url:"https://taobao.com"},
+    {id:4,platform:"taobao",platformName:"淘宝",title:"天猫超市优惠券",amount:15,threshold:99,start:"2025-01-01",end:"2025-12-31",url:"https://tmall.com"},
+    {id:5,platform:"pdd",platformName:"拼多多",title:"拼多多百亿补贴券",amount:50,threshold:500,start:"2025-01-01",end:"2025-12-31",url:"https://pinduoduo.com"},
+    {id:6,platform:"pdd",platformName:"拼多多",title:"多多超市满减券",amount:10,threshold:50,start:"2025-01-01",end:"2025-12-31",url:"https://pinduoduo.com"},
+    {id:7,platform:"jd",platformName:"京东",title:"手机通讯满减券",amount:200,threshold:3000,start:"2025-06-01",end:"2025-12-31",url:"https://coupon.jd.com"},
+    {id:8,platform:"taobao",platformName:"淘宝",title:"美妆个护券",amount:50,threshold:299,start:"2025-01-01",end:"2025-12-31",url:"https://taobao.com"},
+    {id:9,platform:"pdd",platformName:"拼多多",title:"数码配件券",amount:5,threshold:30,start:"2025-01-01",end:"2025-12-31",url:"https://pinduoduo.com"},
+    {id:10,platform:"jd",platformName:"京东",title:"图书文具满减券",amount:30,threshold:150,start:"2025-01-01",end:"2025-12-31",url:"https://coupon.jd.com"},
+    {id:11,platform:"taobao",platformName:"淘宝",title:"服饰鞋包券",amount:80,threshold:500,start:"2025-01-01",end:"2025-12-31",url:"https://taobao.com"},
+    {id:12,platform:"pdd",platformName:"拼多多",title:"食品生鲜券",amount:10,threshold:60,start:"2025-01-01",end:"2025-12-31",url:"https://pinduoduo.com"},
+];
+
+const CATEGORIES = [
+    {name:"电脑",keyword:"联想",color:"#1890FF"},
+    {name:"手机",keyword:"小米",color:"#FA541C"},
+    {name:"耳机",keyword:"索尼",color:"#722ED1"},
+    {name:"电视",keyword:"小米电视",color:"#13C2C2"},
+    {name:"相机",keyword:"索尼",color:"#EB2F96"},
+    {name:"游戏",keyword:"Switch",color:"#FA8C16"},
+    {name:"家电",keyword:"美的",color:"#52C41A"},
+    {name:"运动",keyword:"耐克",color:"#2F54EB"},
+    {name:"美妆",keyword:"SK-II",color:"#F759AB"},
+    {name:"食品",keyword:"车厘子",color:"#FF4D4F"},
+];
+
+// ==================== State ====================
+let currentSort = 'price';
+let currentKeyword = '';
+let claimedCoupons = new Set(JSON.parse(localStorage.getItem('claimedCoupons') || '[]'));
+
+// ==================== Utils ====================
+function formatPrice(p) { return p.toFixed(2); }
+function formatSales(s) { return s >= 10000 ? (s/10000).toFixed(1) + '万' : s.toLocaleString(); }
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ==================== Search ====================
+function searchProducts(keyword, sort) {
+    if (!keyword) return PRODUCTS.slice();
+    const kw = keyword.toLowerCase();
+    let results = PRODUCTS.filter(p =>
+        p.name.toLowerCase().includes(kw) ||
+        p.platformName.includes(kw) ||
+        p.shopName.toLowerCase().includes(kw)
+    );
+    // fuzzy: split keyword and OR match
+    if (results.length === 0) {
+        const parts = kw.split(/\s+/).filter(p => p.length >= 2);
+        if (parts.length > 0) {
+            results = PRODUCTS.filter(p =>
+                parts.some(part => p.name.toLowerCase().includes(part))
+            );
+        }
+    }
+    // fallback: return popular items
+    if (results.length === 0) {
+        results = PRODUCTS.slice().sort((a,b) => b.sales - a.sales).slice(0, 20);
+    }
+    return sortProducts(results, sort);
+}
+
+function sortProducts(products, sort) {
+    const sorted = [...products];
+    switch(sort) {
+        case 'price': sorted.sort((a,b) => a.price - b.price); break;
+        case 'sales': sorted.sort((a,b) => b.sales - a.sales); break;
+        case 'rating': sorted.sort((a,b) => b.rating - a.rating); break;
+    }
+    // mark cheapest
+    if (sorted.length > 0) {
+        const minPrice = sorted[0].price;
+        sorted.forEach(p => p.best = p.price === minPrice);
+    }
+    return sorted;
+}
+
+function getCompareList(product) {
+    const baseName = product.name.replace(/\s*(银色|黑色|白色|灰色|蓝色|红色|金色|钛金属|钛灰|雅丹黑|冰川银|冰霜银|镍铜色|星辰灰|星野|国行|日版|海外版|标准版).*$/i, '').trim();
+    return PRODUCTS.filter(p => p.name.toLowerCase().includes(baseName.toLowerCase().substring(0, 8)) && p.id !== product.id)
+        .sort((a,b) => a.price - b.price);
+}
+
+// ==================== Render ====================
+function renderCategories() {
+    const grid = document.getElementById('catGrid');
+    grid.innerHTML = CATEGORIES.map(c => `
+        <div class="cat-item" onclick="searchByCategory('${c.keyword}')">
+            <div class="cat-icon" style="background:${c.color}">${c.name.substring(0,2)}</div>
+            <span class="cat-name">${c.name}</span>
+        </div>
+    `).join('');
+}
+
+function renderProducts(products, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = products.map(p => `
+        <div class="product-card" onclick="showDetail(${p.id})">
+            ${p.best ? '<div class="best-tag">超值推荐</div>' : ''}
+            <div class="platform-tag platform-${p.platform}">${p.platformName}</div>
+            <div class="product-img">${p.platformName} - ${p.name.split(' ')[0].substring(0,10)}</div>
+            <div class="product-info">
+                <div class="product-name">${p.name}</div>
+                <div class="product-meta">
+                    <span>${formatSales(p.sales)}人付款</span>
+                    <span>${p.shopName}</span>
+                    <span style="color:${p.rating>=4.8?'#FAAD14':p.rating>=4.5?'#52C41A':'var(--gray-4)'}">&#9733; ${p.rating}</span>
+                </div>
+                <div class="product-price-row">
+                    <span class="price-current"><small>&yen;</small>${formatPrice(p.price)}</span>
+                    <span class="price-original">&yen;${formatPrice(p.originalPrice)}</span>
+                    ${p.originalPrice > p.price ? `<span class="price-save">省${formatPrice(p.originalPrice - p.price)}</span>` : ''}
+                </div>
+            </div>
+            <div class="product-actions">
+                <button class="btn-buy" onclick="event.stopPropagation();goBuy(${p.id})">去购买</button>
+                <button class="btn-coupon" onclick="event.stopPropagation();showToast('优惠券信息已复制')">领券</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderCoupons() {
+    const grid = document.getElementById('couponGrid');
+    grid.innerHTML = COUPONS.map(c => `
+        <div class="coupon-card">
+            <div class="coupon-left coupon-${c.platform}">
+                <span class="coupon-amount"><small>&yen;</small>${c.amount}</span>
+                <span class="coupon-cond">满${c.threshold}可用</span>
+            </div>
+            <div class="coupon-right">
+                <span class="coupon-title">${c.title}</span>
+                <span class="coupon-date">${c.start} 至 ${c.end}</span>
+                <button class="coupon-claim" style="${claimedCoupons.has(c.id) ? 'background:var(--gray-4);cursor:default;' : ''}" onclick="${claimedCoupons.has(c.id) ? '' : `claimCoupon(${c.id})`}">${claimedCoupons.has(c.id) ? '已领取' : '立即领取'}</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderCompare(product) {
+    const compareList = getCompareList(product);
+    if (compareList.length === 0) {
+        document.getElementById('compareSection').style.display = 'none';
+        return;
+    }
+    document.getElementById('compareSection').style.display = 'block';
+    document.getElementById('compareTitle').textContent = `${product.name.substring(0,15)}... 多平台比价`;
+    const minPrice = Math.min(product.price, ...compareList.map(p => p.price));
+    const allItems = [{...product, isCurrent: true}, ...compareList];
+    document.getElementById('compareList').innerHTML = allItems.map(p => `
+        <div class="compare-row">
+            <span class="compare-platform platform-tag platform-${p.platform}" style="position:static;display:inline-block;">${p.platformName}${p.isCurrent ? '(当前)' : ''}</span>
+            <span class="compare-price ${p.price === minPrice ? 'compare-cheapest' : ''}">&yen;${formatPrice(p.price)} ${p.price === minPrice ? '- 最低价' : ''}</span>
+            ${!p.isCurrent ? `<button class="btn-buy" style="width:auto;height:32px;padding:0 16px;font-size:13px;" onclick="goBuy(${p.id})">去购买</button>` : ''}
+        </div>
+    `).join('');
+}
+
+// ==================== Actions ====================
+function doSearch() {
+    const input = document.getElementById('searchInput');
+    const keyword = input.value.trim();
+    if (!keyword) { showToast('请输入商品名称'); return; }
+    currentKeyword = keyword;
+    const results = searchProducts(keyword, currentSort);
+    document.getElementById('hotSection').style.display = 'none';
+    document.getElementById('searchSection').style.display = 'block';
+    document.getElementById('searchTitle').textContent = `"${keyword}" 搜索结果 (${results.length}件)`;
+    document.getElementById('emptyState').style.display = results.length === 0 ? 'block' : 'none';
+    document.getElementById('searchGrid').style.display = results.length === 0 ? 'none' : 'grid';
+    renderProducts(results, 'searchGrid');
+    document.getElementById('compareSection').style.display = 'none';
+}
+
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    currentKeyword = '';
+    document.getElementById('hotSection').style.display = 'block';
+    document.getElementById('searchSection').style.display = 'none';
+    document.getElementById('compareSection').style.display = 'none';
+    renderHotDeals();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function setSort(sort, el) {
+    currentSort = sort;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    if (currentKeyword) doSearch();
+}
+
+function searchByCategory(keyword) {
+    document.getElementById('searchInput').value = keyword;
+    doSearch();
+    document.getElementById('catGrid').scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+function showDetail(id) {
+    const product = PRODUCTS.find(p => p.id === id);
+    if (!product) return;
+    renderCompare(product);
+    document.getElementById('compareSection').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+function goBuy(id) {
+    const product = PRODUCTS.find(p => p.id === id);
+    if (!product) return;
+    showToast('正在跳转到' + product.platformName + '...');
+    // In production, this would open the affiliate link
+    setTimeout(() => {
+        showToast('演示模式 - 实际将跳转到' + product.platformName + '购买页面');
+    }, 1000);
+}
+
+function claimCoupon(id) {
+    if (claimedCoupons.has(id)) return;
+    claimedCoupons.add(id);
+    localStorage.setItem('claimedCoupons', JSON.stringify([...claimedCoupons]));
+    renderCoupons();
+    showToast('优惠券领取成功！');
+}
+
+function renderHotDeals() {
+    const hot = PRODUCTS.slice().sort((a,b) => b.sales - a.sales).slice(0, 8);
+    hot.forEach(p => p.best = p.price === hot.reduce((min, x) => x.price < min ? x.price : min, hot[0].price));
+    renderProducts(hot, 'hotGrid');
+}
+
+// ==================== Init ====================
+document.addEventListener('DOMContentLoaded', () => {
+    renderCategories();
+    renderHotDeals();
+    renderCoupons();
+    // Enter key search
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') doSearch();
+    });
+});
+</script>
+
+</body>
+</html>
